@@ -15,12 +15,10 @@ import { AccountModule } from './modules/account/account.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { MailModule } from './mail/mail.module';
 
-import { TestModule } from './modules/test/test.module';
 import { ProductCategoryModule } from './modules/product-category/product-category.module';
 import { ProductModule } from './modules/product/product.module';
 import { NewsModule } from './modules/news/news.module';
-import { OrderDetailModule } from './modules/order-detail/order-detail.module';
-import { OrderDetailsModule } from './modules/order-details/order-details.module';
+import { UploadModule } from './modules/upload/upload.module';
 
 @Module({
   imports: [
@@ -37,12 +35,10 @@ import { OrderDetailsModule } from './modules/order-details/order-details.module
       rootPath: join(__dirname, '..', ''),
     }),
     
-    TestModule,
     ProductCategoryModule,
     ProductModule,
     NewsModule,
-    OrderDetailModule,
-    OrderDetailsModule,
+    UploadModule,
   ],
   providers: [
     {

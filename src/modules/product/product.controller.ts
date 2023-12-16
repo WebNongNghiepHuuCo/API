@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Query,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { ProductService } from './product.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -12,9 +23,9 @@ import { IdDto } from '~/common/dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
+import { findPaginateCategory } from './dto/find-paginate-category.dto';
 
 @ApiTags('[] - product')
-
 @Controller('product')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
@@ -32,7 +43,13 @@ export class ProductController {
   findPaginateProducts(@Query() dto: findPaginateProduct): Promise<AppResponse<PaginationResponse<Product>>> {
     return this.productService.findPaginateProduct(dto);
   }
-  
+  @Get('getByCategory')
+  @ApiOperation({
+    summary: 'Get paginate services',
+  })
+  findPaginateCategory(@Query() dto: findPaginateCategory): Promise<AppResponse<PaginationResponse<Product>>> {
+    return this.productService.findPaginateCategory(dto);
+  }
   @Get(':id')
   @ApiOperation({
     summary: 'Detail services',
@@ -58,33 +75,5 @@ export class ProductController {
   })
   remove(@Param('id') id: string) {
     return this.productService.remove(id);
-  }
-  
-  @Post('upload')
-  @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './public/images/product',
-      filename: (req, file, callback) => {
-        const uniqueSuffix = `${Date.now()}_${Math.round(Math.random() * 1e9)}`
-        const [name, mineType] = file.originalname.split('.')
-        const filename = `${name}_${uniqueSuffix}.${mineType}`
-        callback(null, filename)
-      }
-    })
-  }))
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        file: {
-          type: 'file',
-          format: 'binary',
-        },
-      },
-    },
-  })
-  async uploadFile(){
-    return "success"
   }
 }

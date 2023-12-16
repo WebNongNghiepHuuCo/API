@@ -19,7 +19,6 @@ export class CreateNewsDto {
 
     @ApiProperty()
     @IsNotEmpty()
-    @IsString()
     fulltext: string;
 
     @ApiProperty()

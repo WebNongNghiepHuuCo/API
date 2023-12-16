@@ -11,6 +11,7 @@ import PaginationHelper from '~/helpers/pagination.helper';
 import { findPaginateProduct } from './dto/find-paginate-product.dto';
 import { FindPaginateService } from '../services/dto';
 import { ProductCategory } from '../product-category/product-category.schema';
+import { findPaginateCategory } from './dto/find-paginate-category.dto';
 
 @Injectable()
 export class ProductService {
@@ -20,17 +21,16 @@ export class ProductService {
   ) {}
   async create(createServiceDto: CreateProductDto): Promise<AppResponse<Product> | Observable<never>> {
     const { categoryId } = createServiceDto;
-    const productCategory = await this.productCategoryModel.findOne({_id:categoryId});
-    if(productCategory){
+    const productCategory = await this.productCategoryModel.findOne({ _id: categoryId });
+    if (productCategory) {
       return {
         content: await this.productModel.create({
           ...createServiceDto,
         }),
       };
-    }else{
+    } else {
       throw new BadRequestException('productCategory not exist');
     }
-   
   }
 
   async findPaginateProduct(dto: findPaginateProduct): Promise<AppResponse<PaginationResponse<Product>>> {
@@ -50,6 +50,7 @@ export class ProductService {
       content: PaginationHelper.getPaginationResponse({ page: page, data: videos, perPage: perPage, total: count }),
     };
   }
+
   async findOne(id: string) {
     const product = await this.findByField({ _id: id });
 
@@ -61,6 +62,7 @@ export class ProductService {
       content: product,
     };
   }
+
   async findByField(filter: object): Promise<Product | Observable<never>> {
     const product = await this.productModel.findOne(filter);
 
@@ -70,6 +72,7 @@ export class ProductService {
 
     return product;
   }
+
   async update(id: string, updateProductDto: UpdateProductDto) {
     // const { name } = updateProductDto;
     const Product = await this.findByField({ _id: id });
@@ -92,6 +95,7 @@ export class ProductService {
       ),
     };
   }
+
   async remove(id: string) {
     const product = await this.productModel.findOne({
       _id: id,
@@ -103,6 +107,25 @@ export class ProductService {
 
     return {
       content: await this.productModel.findByIdAndRemove({ _id: id }),
+    };
+  }
+
+  async findPaginateCategory(dto: findPaginateCategory): Promise<AppResponse<PaginationResponse<Product>>> {
+    const { page, perPage, match, skip } = PaginationHelper.getQueryByPagination<Product, FindPaginateService>(dto);
+
+    const { categoryName } = dto;
+    const category = await this.productCategoryModel.findOne({ name: categoryName });
+
+    if (category) {
+      match.categoryId = { $regex: category?._id };
+    }
+
+    const [videos, count] = await Promise.all([
+      this.productModel.find(match).sort({ createdAt: 'desc' }).limit(perPage),
+      this.productModel.countDocuments(match),
+    ]);
+    return {
+      content: PaginationHelper.getPaginationResponse({ page: page, data: videos, perPage: perPage, total: count }),
     };
   }
 }

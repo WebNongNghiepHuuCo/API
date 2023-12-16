@@ -30,7 +30,7 @@ export class OrdersController {
 
   @Get(':id')
   @ApiOperation({
-    summary: 'Detail oreder',
+    summary: 'Detail order',
   })
   findOne(@Param() id: IdDto): Promise<AppResponse<Order> | Observable<never>> {
     return this.ordersService.findOne(id.id);

@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseInterceptors, Req, UploadedFiles, ConsoleLogger } from '@nestjs/common';
 import { NewsService } from './news.service';
 import { CreateNewsDto } from './dto/create-news.dto';
 import { UpdateNewsDto } from './dto/update-news.dto';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { News } from './news.schema';
 import { findPaginateNews } from './dto/find-paginate-news.dto';
 import { AppResponse } from '~/common/interfaces';
@@ -57,16 +57,33 @@ export class NewsController {
   remove(@Param('id') id: string) {
     return this.newsService.remove(id);
   }
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination: './public/images/news',
-      filename : (req , file , cb) => {
-        cb(null, `${file.originalname}`)
-      }
-    })
-  }))
-  async uploadFile(){
-    return "success"
+  @Post('upload-img')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: 'public/images/news',
+        filename: (req, file, callback) => {
+          const uniqueSuffix = `${Date.now()}_${Math.round(Math.random() * 1e9)}`;
+          const [name, mineType] = file.originalname.split('.');
+          const filename = `${name}_${uniqueSuffix}.${mineType}`;
+          callback(null, filename);
+        },
+      }),
+    }),
+  )
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'file',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  uploadFile(@UploadedFiles() files) {
+    return 1
   }
 }
